@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Informasi Berkas - Notaris Detta Herdiana</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      color: #111;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #b30000;
+      color: white;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .marquee {
+      padding: 15px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .marquee h1 {
+      display: inline-block;
+      animation: marquee 15s linear infinite;
+      font-size: 22px;
+      margin: 0;
+      font-weight: bold;
+    }
+
+    .subhead {
+      text-align: center;
+      padding-bottom: 10px;
+      font-size: 16px;
+    }
+
+    @keyframes marquee {
+      from { transform: translateX(100%); }
+      to   { transform: translateX(-100%); }
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #fdfdfd;
+      border: 1px solid #eee;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    input[type="text"], button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      margin: 10px;
+    }
+
+    input[type="text"] {
+      width: 60%;
+      border: 1px solid #b30000;
+      background-color: #fff;
+      color: #111;
+    }
+
+    button {
+      background-color: #b30000;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #8b0000;
+    }
+
+    #loader {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .spinner {
+      margin: auto;
+      border: 8px solid #eee;
+      border-top: 8px solid #b30000;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #result {
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+
+    table {
+      min-width: 800px;
+      border-collapse: collapse;
+      margin: 0 auto;
+      background-color: #fff;
+      color: #111;
+    }
+
+    th, td {
+      border: 1px solid #b30000;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #b30000;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f5f5f5;
+    }
+
+    footer {
+      background-color: #b30000;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      margin-top: 40px;
+    }
+
+    @media screen and (max-width: 600px) {
+      input[type="text"], button {
+        width: 100%;
+      }
+
+      .container {
+        padding: 10px;
+      }
+
+      table {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="marquee">
+    <h1>Informasi Berkas</h1>
+  </div>
+  <div class="subhead">Kantor Notaris Detta Herdiana, SH., M.Kn</div>
+</header>
+
+<div class="container">
+  <input type="text" id="searchInput" placeholder="Masukkan Nama...">
+  <button onclick="handleSearch()">Cari</button>
+
+  <div id="loader"><div class="spinner"></div></div>
+
+  <div id="result"></div>
+</div>
+
+<footer>
+  &copy; 2025 Detta Herdiana, SH., M.Kn &mdash; Seluruh hak cipta dilindungi.
+</footer>
+
+<script>
+  const sheetURL = "https://docs.google.com/spreadsheets/d/1Vnd4hbl0hMfkz5DzXhowrRPNdHLViBxv2OIq3NCpOYk/gviz/tq?tqx=out:json";
+  let sheetData = [];
+
+  async function fetchData() {
+    const response = await fetch(sheetURL);
+    const text = await response.text();
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    const rows = json.table.rows;
+
+    sheetData = rows.map(r => {
+      const c = r.c;
+      return {
+        No: c[0]?.v || '',
+        Nama: c[1]?.v || '',
+        AlasHak: c[2]?.v || '',
+        Desa: c[3]?.v || '',
+        Kecamatan: c[4]?.v || '',
+        Kabupaten: c[5]?.v || '',
+        Proses: c[6]?.v || '',
+        Posisi: c[7]?.v || '',
+        Update: c[8]?.v || ''
+      };
+    });
+  }
+
+  function displayResult(data) {
+    const resultDiv = document.getElementById("result");
+    if (data.length === 0) {
+      resultDiv.innerHTML = "<p>Data tidak ditemukan.</p>";
+      return;
+    }
+
+    let html = `<table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Nama</th>
+          <th>Alas Hak</th>
+          <th>Desa/Kelurahan</th>
+          <th>Kecamatan</th>
+          <th>Kabupaten/Kota</th>
+          <th>Proses</th>
+          <th>Posisi</th>
+          <th>Tanggal Update</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    data.forEach(row => {
+      html += `<tr>
+        <td>${row.No}</td>
+        <td>${row.Nama}</td>
+        <td>${row.AlasHak}</td>
+        <td>${row.Desa}</td>
+        <td>${row.Kecamatan}</td>
+        <td>${row.Kabupaten}</td>
+        <td>${row.Proses}</td>
+        <td>${row.Posisi}</td>
+        <td>${row.Update}</td>
+      </tr>`;
+    });
+
+    html += "</tbody></table>";
+    resultDiv.innerHTML = html;
+  }
+
+  async function handleSearch() {
+    const input = document.getElementById("searchInput").value.trim().toLowerCase();
+    if (!input) return;
+
+    document.getElementById("loader").style.display = "block";
+    document.getElementById("result").innerHTML = "";
+
+    if (sheetData.length === 0) await fetchData();
+
+    const filtered = sheetData.filter(row =>
+      row.Nama.toLowerCase().includes(input)
+    );
+
+    displayResult(filtered);
+    document.getElementById("loader").style.display = "none";
+  }
+</script>
+
+</body>
+</html>
