@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Informasi Berkas - Notaris Detta Herdiana</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1c1c1c;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #b30000;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .marquee {
+      display: inline-block;
+      padding-left: 100%;
+      animation: marquee 15s linear infinite;
+      font-size: 24px;
+      color: #fff;
+      padding: 20px 0;
+    }
+
+    @keyframes marquee {
+      0%   { transform: translateX(0%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    input[type="text"] {
+      width: 60%;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border: 1px solid #b30000;
+      border-radius: 5px;
+      background-color: #2a2a2a;
+      color: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #2c2c2c;
+    }
+
+    th, td {
+      border: 1px solid #b30000;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #b30000;
+    }
+
+    tr:nth-child(even) {
+      background-color: #333;
+    }
+
+    #loader {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #b30000;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="spinner"></div>
+</div>
+
+<header>
+  <div class="marquee">Informasi Berkas Kantor Notaris Detta Herdiana, SH, MKn</div>
+</header>
+
+<div class="container">
+  <input type="text" id="searchInput" placeholder="Cari berdasarkan Nama..." onkeyup="searchData()">
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Nama</th>
+        <th>Alas Hak</th>
+        <th>Desa/Kelurahan</th>
+        <th>Kecamatan</th>
+        <th>Kabupaten/Kota</th>
+        <th>Proses</th>
+        <th>Posisi</th>
+        <th>Tanggal Update</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+  const sheetURL = "https://docs.google.com/spreadsheets/d/1Vnd4hbl0hMfkz5DzXhowrRPNdHLViBxv2OIq3NCpOYk/gviz/tq?tqx=out:json";
+
+  async function loadData() {
+    try {
+      const response = await fetch(sheetURL);
+      const text = await response.text();
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      const rows = json.table.rows;
+
+      const data = rows.map(r => {
+        const c = r.c;
+        return {
+          No: c[0]?.v || '',
+          Nama: c[1]?.v || '',
+          AlasHak: c[2]?.v || '',
+          Desa: c[3]?.v || '',
+          Kecamatan: c[4]?.v || '',
+          Kabupaten: c[5]?.v || '',
+          Proses: c[6]?.v || '',
+          Posisi: c[7]?.v || '',
+          Update: c[8]?.v || ''
+        };
+      });
+
+      window.sheetData = data;
+      displayData(data);
+    } catch (err) {
+      alert("Gagal memuat data dari spreadsheet.");
+      console.error(err);
+    } finally {
+      document.getElementById("loader").style.display = "none";
+    }
+  }
+
+  function displayData(data) {
+    const tbody = document.querySelector("#dataTable tbody");
+    tbody.innerHTML = "";
+    data.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${row.No}</td>
+        <td>${row.Nama}</td>
+        <td>${row.AlasHak}</td>
+        <td>${row.Desa}</td>
+        <td>${row.Kecamatan}</td>
+        <td>${row.Kabupaten}</td>
+        <td>${row.Proses}</td>
+        <td>${row.Posisi}</td>
+        <td>${row.Update}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function searchData() {
+    const query = document.getElementById("searchInput").value.toLowerCase();
+    const filtered = window.sheetData.filter(row =>
+      row.Nama.toLowerCase().includes(query)
+    );
+    displayData(filtered);
+  }
+
+  window.addEventListener("DOMContentLoaded", loadData);
+</script>
+
+</body>
+</html>
